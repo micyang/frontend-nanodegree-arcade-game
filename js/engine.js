@@ -79,8 +79,8 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
+        checkCollisions();
         updateEntities(dt);
-        //checkCollisions();
     }
 
     /* This is called by the update function  and loops through all of the
@@ -94,7 +94,23 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        player.update(dt);
+        player.update();
+    }
+    
+    function checkCollisions() {
+        allEnemies.forEach(function(enemy) {
+            if(intersect(enemy, player)){
+               player.death();
+            }
+        });
+    }
+    
+    // Returns true if compared actors intersect
+    function intersect(actor1, actor2) {
+        return !(actor1.right < actor2.left ||
+                actor1.left > actor2.right ||
+                actor1.top > actor2.bottom ||
+                actor1.bottom < actor2.top);
     }
 
     /* This function initially draws the "game level", it will then call
