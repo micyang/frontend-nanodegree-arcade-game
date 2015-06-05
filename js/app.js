@@ -25,6 +25,10 @@ var ENEMY_RIGHT_ADJUST = 98;
 var ENEMY_LEFT_ADJUST = 3;
 var ENEMY_TOP_ADJUST = 81;
 var ENEMY_BOTTOM_ADJUST = 132;
+// Gem Constants
+var BLUE_GEM = 'images/Gem Blue.png';
+var GREEN_GEM = 'images/Gem Green.png';
+var ORANGE_GEM = 'images/Gem Orange.png';
 
 
 // Returns a random integer between min (included) and max (excluded)
@@ -37,25 +41,27 @@ function getRandomInt(min, max) {
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
 }
-
+/////////////////////////////////////////////////////////////////////
 // Actor Super Class
+/////////////////////////////////////////////////////////////////////
 var Actor = function(x, y, img) {
     this.x = x;
     this.y = y;
     this.sprite = img;
-    this.right = 0;
-    this.left = 0;
-    this.top = 0;
-    this.bottom = 0;
 }
 Actor.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 }
-
-// Enemies our player must avoid
+/////////////////////////////////////////////////////////////////////
+// Enemy Class
+/////////////////////////////////////////////////////////////////////
 var Enemy = function(x, y) {
     Actor.call(this, x, y, 'images/enemy-bug.png');
-    
+    // Hit box update for enemy sprite
+    this.right = this.x + ENEMY_RIGHT_ADJUST;
+    this.left = this.x + ENEMY_LEFT_ADJUST;
+    this.top = this.y + ENEMY_TOP_ADJUST;
+    this.bottom = this.y + ENEMY_BOTTOM_ADJUST;
     // Determines a random speed for the enemy 
     this.speed = getRandomArbitrary(MIN_ENEMY_SPEED, MAX_ENEMY_SPEED);
 }
@@ -78,12 +84,19 @@ Enemy.prototype.update = function(dt) {
     this.top = this.y + ENEMY_TOP_ADJUST;
     this.bottom = this.y + ENEMY_BOTTOM_ADJUST;
 }
-
+/////////////////////////////////////////////////////////////////////
 // Player Class
+/////////////////////////////////////////////////////////////////////
 var Player = function(x, y) {
     Actor.call(this, x, y, 'images/char-boy.png');
     this.alive = true;
-    
+    this.score = 0;
+    this.lives = 4;
+    // Hit box update for player sprite
+    this.right = this.x + PLAYER_RIGHT_ADJUST;
+    this.left = this.x + PLAYER_LEFT_ADJUST;
+    this.top = this.y + PLAYER_TOP_ADJUST;
+    this.bottom = this.y + PLAYER_BOTTOM_ADJUST;
 }
 Player.prototype = Object.create(Actor.prototype);
 Player.prototype.constructor = Player;
@@ -99,6 +112,12 @@ Player.prototype.update = function() {
         this.x = PLAYER_START_X;
         this.y = PLAYER_START_Y;
         this.alive = true;
+        if(this.lives == 0){
+            this.score = 0;
+            this.lives = 3;
+        } else {
+            this.lives = this.lives - 1;
+        }
     }
     
     // Hit box update for player sprite
@@ -107,18 +126,70 @@ Player.prototype.update = function() {
     this.top = this.y + PLAYER_TOP_ADJUST;
     this.bottom = this.y + PLAYER_BOTTOM_ADJUST;
 }
-Player.prototype.death = function() {
-    this.alive = false;
+Player.prototype.scoreUpdate = function(value) {
+    this.score = this.score + value;
+}
+Player.prototype.renderStatus = function() {
+    ctx.clearRect(0, 20 , 505 , 20);
+    ctx.font = "20px serif";
+    //ctx.textBaseline="hanging";
+    // Draw scores on the top left
+    ctx.fillText("Score: " + this.score, 0, 40);
+    // Draw lives on the top right
+    ctx.fillText("Lives: " + this.lives, 404, 40);
+}
+
+/////////////////////////////////////////////////////////////////////
+// Gem Class
+/////////////////////////////////////////////////////////////////////
+var Gem = function(x, y) {
+    this.gemColor = [BLUE_GEM, GREEN_GEM, ORANGE_GEM];
+    // Randomly will choose a gem with a value
+    this.value = getRandomInt(0, 3) + 1;
+    Actor.call(this, x, y, this.gemColor[this.value - 1]);
+    this.taken = false;
+    // Hit box update for gem sprite
+    // Uses player hit box adjustment values
+    this.right = this.x + PLAYER_RIGHT_ADJUST;
+    this.left = this.x + PLAYER_LEFT_ADJUST;
+    this.top = this.y + PLAYER_TOP_ADJUST;
+    this.bottom = this.y + PLAYER_BOTTOM_ADJUST;
+}
+Gem.prototype = Object.create(Actor.prototype);
+Gem.prototype.constructor = Gem;
+Gem.prototype.update = function() {
+    // Random type of gem will randomly spawn at a location
+    // after player grabs it
+    if(this.taken == true) {
+        this.value = getRandomInt(0, 3) + 1;
+        this.sprite = this.gemColor[this.value - 1];
+        // Reset gem in a random location
+        this.x = GRID_X * getRandomInt(0, 5);
+        this.y = GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE;
+        this.taken = false;
+    }
+    // Hit box update for gem sprite
+    // Uses player hit box adjustment values
+    this.right = this.x + PLAYER_RIGHT_ADJUST;
+    this.left = this.x + PLAYER_LEFT_ADJUST;
+    this.top = this.y + PLAYER_TOP_ADJUST;
+    this.bottom = this.y + PLAYER_BOTTOM_ADJUST;
 }
 
 
-// Instantiate Player Object
+/////////////////////////////////////////////////////////////////////
+// Instantiate Objects
+/////////////////////////////////////////////////////////////////////
+// Instantiate Player
 var player = new Player(PLAYER_START_X, PLAYER_START_Y);
 
 // Instantiate Enemy Object in an array
 var allEnemies = new Array();
 for (var i = 0; i < ENEMY_SPAWN; i++)
     allEnemies.push(new Enemy(GRID_X * -1, GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE));
+    
+// Instantiate Gem Object
+var gem = new Gem(GRID_X * getRandomInt(0, 5), GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE);
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
