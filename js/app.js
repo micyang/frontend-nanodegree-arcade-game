@@ -1,3 +1,8 @@
+// Global Variables
+// If there's a title screen, gameplay is false
+// Primarily to stop player movement during a non-gameplay moment
+var globalGameplay = false;
+
 // Grid constants
 var GRID_Y = 83;
 var GRID_Y_TOP_EMPTY_SPACE = 50;
@@ -29,6 +34,14 @@ var ENEMY_BOTTOM_ADJUST = 132;
 var BLUE_GEM = 'images/Gem Blue.png';
 var GREEN_GEM = 'images/Gem Green.png';
 var ORANGE_GEM = 'images/Gem Orange.png';
+// Player Sprite Constants
+var BOY = 'images/char-boy.png';
+var CAT_GIRL = 'images/char-cat-girl.png';
+var HORN_GIRL = 'images/char-horn-girl.png';
+var PINK_GIRL = 'images/char-pink-girl.png';
+var PRINCESS_GIRL = 'images/char-princess-girl.png';
+
+
 
 
 // Returns a random integer between min (included) and max (excluded)
@@ -88,10 +101,12 @@ Enemy.prototype.update = function(dt) {
 // Player Class
 /////////////////////////////////////////////////////////////////////
 var Player = function(x, y) {
-    Actor.call(this, x, y, 'images/char-boy.png');
+    this.charSelect = [BOY, CAT_GIRL, HORN_GIRL, PINK_GIRL, PRINCESS_GIRL]
+    Actor.call(this, x, y, this.charSelect[getRandomInt(0, 5)]);
     this.alive = true;
     this.score = 0;
-    this.lives = 4;
+    this.highScore = 0;
+    this.lives = 3;
     // Hit box update for player sprite
     this.right = this.x + PLAYER_RIGHT_ADJUST;
     this.left = this.x + PLAYER_LEFT_ADJUST;
@@ -111,6 +126,7 @@ Player.prototype.update = function() {
     if(this.alive == false) {
         this.x = PLAYER_START_X;
         this.y = PLAYER_START_Y;
+        this.sprite = this.charSelect[getRandomInt(0, 5)];
         this.alive = true;
         if(this.lives == 0){
             this.score = 0;
@@ -130,13 +146,19 @@ Player.prototype.scoreUpdate = function(value) {
     this.score = this.score + value;
 }
 Player.prototype.renderStatus = function() {
-    ctx.clearRect(0, 20 , 505 , 20);
+    ctx.clearRect(0, 20 , 505 , 25);
     ctx.font = "20px serif";
-    //ctx.textBaseline="hanging";
     // Draw scores on the top left
     ctx.fillText("Score: " + this.score, 0, 40);
     // Draw lives on the top right
     ctx.fillText("Lives: " + this.lives, 404, 40);
+    // High score during gaming session
+    if(this.score > this.highScore) {
+        this.highScore = this.score;
+        ctx.fillText("High Score: " + this.highScore, 202, 40);
+    } else {
+        ctx.fillText("High Score: " + this.highScore, 202, 40);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////
