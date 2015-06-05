@@ -96,6 +96,8 @@ var Engine = (function(global) {
         });
         player.update();
         gem.update();
+        heart.update();
+        star.update();
     }
     
     function checkCollisions() {
@@ -104,12 +106,24 @@ var Engine = (function(global) {
                player.alive = false;
             }
         });
+        
         if(intersect(gem, player)) {
-                gem.taken = true;
-                player.scoreUpdate(gem.value);
-            }
+            gem.taken = true;
+            player.scoreUpdate(gem.value);
+        }
+        
+        if(intersect(heart, player)) {
+            heart.taken = true;
+            player.lives = player.lives + 1;
+        }
+        
+        if(intersect(star, player)) {
+            star.taken = true;
+            allEnemies.forEach(function(enemy) {
+                enemy.starReset = true;
+            });
+        }
     }
-    
     // Returns true if compared actors intersect
     function intersect(actor1, actor2) {
         return !(actor1.right < actor2.left ||
@@ -176,6 +190,9 @@ var Engine = (function(global) {
 
         player.render();
         player.renderStatus();
+        star.render();
+        heart.render();
+        
     }
 
     /* This function does nothing but it could have been a good place to

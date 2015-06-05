@@ -1,25 +1,20 @@
-// Global Variables
-// If there's a title screen, gameplay is false
-// Primarily to stop player movement during a non-gameplay moment
-var globalGameplay = false;
-
 // Grid constants
 var GRID_Y = 83;
+var GRID_X = 101;
 var GRID_Y_TOP_EMPTY_SPACE = 50;
 var GRID_Y_BOTTOM_EMPTY_SPACE = 20;
 var MAX_PLAYER_MOVE_UP = 1 * GRID_Y + GRID_Y_TOP_EMPTY_SPACE;
 var MAX_PLAYER_MOVE_DOWN = 5 * GRID_Y - GRID_Y_BOTTOM_EMPTY_SPACE;
-var GRID_X = 101;
 var MAX_PLAYER_MOVE_LEFT = 0;
 var MAX_PLAYER_MOVE_RIGHT = 4 * GRID_X;
 // Player start constant
 var PLAYER_START_X = GRID_X * 2;
 var PLAYER_START_Y = GRID_Y * 5 - GRID_Y_BOTTOM_EMPTY_SPACE;
 // Enemy Speed Min Max constants
-var MIN_ENEMY_SPEED = 200;
-var MAX_ENEMY_SPEED = 500;
+var MIN_ENEMY_SPEED = 100;
+var MAX_ENEMY_SPEED = 700;
 // Enemy Spawn
-var ENEMY_SPAWN = 5;
+var ENEMY_SPAWN = 6;
 // Player Hitbox Adjustment
 var PLAYER_RIGHT_ADJUST = 83;
 var PLAYER_LEFT_ADJUST = 18;
@@ -77,6 +72,8 @@ var Enemy = function(x, y) {
     this.bottom = this.y + ENEMY_BOTTOM_ADJUST;
     // Determines a random speed for the enemy 
     this.speed = getRandomArbitrary(MIN_ENEMY_SPEED, MAX_ENEMY_SPEED);
+    // Star reset
+    this.starReset = false;
 }
 Enemy.prototype = Object.create(Actor.prototype);
 Enemy.prototype.constructor = Enemy;
@@ -88,6 +85,12 @@ Enemy.prototype.update = function(dt) {
         this.x = GRID_X * -1;
         this.y = GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE;
         this.speed = getRandomArbitrary(MIN_ENEMY_SPEED, MAX_ENEMY_SPEED);
+    }
+    if(this.starReset == true) {
+        this.x = GRID_X * -1;
+        this.y = GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE;
+        this.speed = getRandomArbitrary(MIN_ENEMY_SPEED, MAX_ENEMY_SPEED);
+        this.starReset = false;
     }
     this.x = this.x + this.speed * dt;
     
@@ -153,16 +156,13 @@ Player.prototype.renderStatus = function() {
     // Draw lives on the top right
     ctx.fillText("Lives: " + this.lives, 404, 40);
     // High score during gaming session
-    if(this.score > this.highScore) {
-        this.highScore = this.score;
-        ctx.fillText("High Score: " + this.highScore, 202, 40);
-    } else {
-        ctx.fillText("High Score: " + this.highScore, 202, 40);
-    }
+    if(this.score > this.highScore) this.highScore = this.score;
+    ctx.fillText("High Score: " + this.highScore, 202, 40);
+    
 }
 
 /////////////////////////////////////////////////////////////////////
-// Gem Class
+// Gem Class - Player gains points by grabbing gems
 /////////////////////////////////////////////////////////////////////
 var Gem = function(x, y) {
     this.gemColor = [BLUE_GEM, GREEN_GEM, ORANGE_GEM];
@@ -197,7 +197,65 @@ Gem.prototype.update = function() {
     this.top = this.y + PLAYER_TOP_ADJUST;
     this.bottom = this.y + PLAYER_BOTTOM_ADJUST;
 }
+/////////////////////////////////////////////////////////////////////
+// Heart Class - Player gains lives by grabbing hearts
+/////////////////////////////////////////////////////////////////////
+var Heart = function(x, y) {
+    Actor.call(this, x, y, 'images/Heart.png');
+    this.taken = false;
+    // Hit box update for heart sprite
+    // Uses player hit box adjustment values
+    this.right = this.x + PLAYER_RIGHT_ADJUST;
+    this.left = this.x + PLAYER_LEFT_ADJUST;
+    this.top = this.y + PLAYER_TOP_ADJUST;
+    this.bottom = this.y + PLAYER_BOTTOM_ADJUST;
+}
+Heart.prototype = Object.create(Actor.prototype);
+Heart.prototype.constructor = Heart;
+Heart.prototype.update = function() {
+    // Heart will reset after it's taken
+    if(this.taken == true) {
+        this.x = GRID_X * getRandomInt(0, 5);
+        this.y = GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE;
+        this.taken = false;
+    }
+    // Hit box update for heart sprite
+    // Uses player hit box adjustment values
+    this.right = this.x + PLAYER_RIGHT_ADJUST;
+    this.left = this.x + PLAYER_LEFT_ADJUST;
+    this.top = this.y + PLAYER_TOP_ADJUST;
+    this.bottom = this.y + PLAYER_BOTTOM_ADJUST;
+}
 
+/////////////////////////////////////////////////////////////////////
+// Star Class - Player resets all the enemies by grabbing stars
+/////////////////////////////////////////////////////////////////////
+var Star = function(x, y) {
+    Actor.call(this, x, y, 'images/Star.png');
+    this.taken = false;
+    // Hit box update for star sprite
+    // Uses player hit box adjustment values
+    this.right = this.x + PLAYER_RIGHT_ADJUST;
+    this.left = this.x + PLAYER_LEFT_ADJUST;
+    this.top = this.y + PLAYER_TOP_ADJUST;
+    this.bottom = this.y + PLAYER_BOTTOM_ADJUST;
+}
+Star.prototype = Object.create(Actor.prototype);
+Star.prototype.constructor = Star;
+Star.prototype.update = function() {
+    // Star will reset after it's taken
+    if(this.taken == true) {
+        this.x = GRID_X * getRandomInt(0, 5);
+        this.y = GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE;
+        this.taken = false;
+    }
+    // Hit box update for star sprite
+    // Uses player hit box adjustment values
+    this.right = this.x + PLAYER_RIGHT_ADJUST;
+    this.left = this.x + PLAYER_LEFT_ADJUST;
+    this.top = this.y + PLAYER_TOP_ADJUST;
+    this.bottom = this.y + PLAYER_BOTTOM_ADJUST;
+}
 
 /////////////////////////////////////////////////////////////////////
 // Instantiate Objects
@@ -212,6 +270,12 @@ for (var i = 0; i < ENEMY_SPAWN; i++)
     
 // Instantiate Gem Object
 var gem = new Gem(GRID_X * getRandomInt(0, 5), GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE);
+
+// Instantiate Heart Object
+var heart = new Heart(GRID_X * getRandomInt(0, 5), GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE);
+
+// Instantiate Star Object
+var star = new Star(GRID_X * getRandomInt(0, 5), GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE);
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
