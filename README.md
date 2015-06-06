@@ -4,6 +4,8 @@ Udacity Project 3: Front End Web Development Nanodegree
 
 This game is played like an old arcade classic: Frogger.
 
+Play it here! http://micyang.github.io/frontend-nanodegree-arcade-game/
+
 How to play: 
 
 Use the arrow keys to move.
