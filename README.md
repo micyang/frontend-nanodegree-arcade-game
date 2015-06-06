@@ -1,6 +1,18 @@
-frontend-nanodegree-arcade-game
+Classic Arcade Game Clone
 ===============================
+Udacity Project 3: Front End Web Development Nanodegree
 
-Students should use this rubric: https://www.udacity.com/course/viewer#!/c-ud015/l-3072058665/m-3072588797
+This game is played like an old arcade classic: Frogger.
 
-for self-checking their submission.
+How to play: 
+
+Use the arrow keys to move.
+
+You get points by grabbing the gems. A blue gem is worth one point. A green gem
+is worth two points. An orange gem is worth three points.
+
+You may gain extra lives by grabbing the hearts.
+
+You may reset the bug's position by grabbing the star.
+
+Good luck and have fun!

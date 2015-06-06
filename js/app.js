@@ -36,11 +36,7 @@ var HORN_GIRL = 'images/char-horn-girl.png';
 var PINK_GIRL = 'images/char-pink-girl.png';
 var PRINCESS_GIRL = 'images/char-princess-girl.png';
 
-
-
-
 // Returns a random integer between min (included) and max (excluded)
-// Using Math.round() will give you a non-uniform distribution!
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
@@ -260,7 +256,7 @@ Star.prototype.update = function() {
 /////////////////////////////////////////////////////////////////////
 // Instantiate Objects
 /////////////////////////////////////////////////////////////////////
-// Instantiate Player
+// Instantiate Player Object
 var player = new Player(PLAYER_START_X, PLAYER_START_Y);
 
 // Instantiate Enemy Object in an array
