@@ -175,8 +175,8 @@ Player.prototype.checkCollisions = function(allEnemies, gem, heart, star) {
         if(intersect(enemy, this)){
            this.alive = false;
         }
-    });
-    */
+    });*/
+    
     if(intersect(gem, this)) {
         gem.taken = true;
         this.score = this.score + gem.value;
