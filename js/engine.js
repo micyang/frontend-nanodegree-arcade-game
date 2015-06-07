@@ -79,7 +79,7 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
-        checkCollisions();
+        player.checkCollisions(allEnemies, gem, heart, star);
         updateEntities(dt);
     }
 
@@ -93,45 +93,19 @@ var Engine = (function(global) {
     function updateEntities(dt) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
+            enemy.updateHitbox();
         });
         player.update();
+        player.updateHitbox()
         gem.update();
+        gem.updateHitbox();
         heart.update();
+        heart.updateHitbox()
         star.update();
+        star.updateHitbox();
+        
     }
     
-    function checkCollisions() {
-        allEnemies.forEach(function(enemy) {
-            if(intersect(enemy, player)){
-               player.alive = false;
-            }
-        });
-        
-        if(intersect(gem, player)) {
-            gem.taken = true;
-            player.scoreUpdate(gem.value);
-        }
-        
-        if(intersect(heart, player)) {
-            heart.taken = true;
-            player.lives = player.lives + 1;
-        }
-        
-        if(intersect(star, player)) {
-            star.taken = true;
-            allEnemies.forEach(function(enemy) {
-                enemy.starReset = true;
-            });
-        }
-    }
-    // Returns true if compared actors intersect
-    function intersect(actor1, actor2) {
-        return !(actor1.right < actor2.left ||
-                actor1.left > actor2.right ||
-                actor1.top > actor2.bottom ||
-                actor1.bottom < actor2.top);
-    }
-
     /* This function initially draws the "game level", it will then call
      * the renderEntities function. Remember, this function is called every
      * game tick (or loop of the game engine) because that's how games work -
