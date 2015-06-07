@@ -10,8 +10,10 @@ How to play:
 
 Use the arrow keys to move.
 
-You get points by grabbing the gems. A blue gem is worth one point. A green gem
+You may gain points by grabbing the gems. A blue gem is worth one point. A green gem
 is worth two points. An orange gem is worth three points.
+
+You may gain one point by going to the water.
 
 You may gain extra lives by grabbing the hearts.
 

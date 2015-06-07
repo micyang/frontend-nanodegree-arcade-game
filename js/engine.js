@@ -93,11 +93,17 @@ var Engine = (function(global) {
     function updateEntities(dt) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
+            enemy.updateHitbox();
         });
         player.update();
+        player.updateHitbox()
         gem.update();
+        gem.updateHitbox();
         heart.update();
+        heart.updateHitbox()
         star.update();
+        star.updateHitbox();
+        
     }
     
     function checkCollisions() {
