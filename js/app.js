@@ -57,35 +57,35 @@ function intersect(actor1, actor2) {
 // Actor Super Class
 //-------------------------------------------------------------------
 
-var Actor = function(x, y, img, right_adj, left_adj, top_adj, bot_adj) {
+var Actor = function(x, y, img, rightAdj, leftAdj, topAdj, botAdj) {
     this.x = x;
     this.y = y;
-    this.right_adj = right_adj;
-    this.left_adj = left_adj;
-    this.top_adj = top_adj;
-    this.bot_adj = bot_adj;
+    this.rightAdj = rightAdj;
+    this.leftAdj = leftAdj;
+    this.topAdj = topAdj;
+    this.botAdj = botAdj;
     this.sprite = img;
-    this.right = this.x + this.right_adj;
-    this.left = this.x + this.left_adj;
-    this.top = this.y + this.top_adj;
-    this.bottom = this.y + this.bot_adj;
+    this.right = this.x + this.rightAdj;
+    this.left = this.x + this.leftAdj;
+    this.top = this.y + this.topAdj;
+    this.bottom = this.y + this.botAdj;
 };
 Actor.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 Actor.prototype.updateHitbox = function() {
-    this.right = this.x + this.right_adj;
-    this.left = this.x + this.left_adj;
-    this.top = this.y + this.top_adj;
-    this.bottom = this.y + this.bot_adj;
+    this.right = this.x + this.rightAdj;
+    this.left = this.x + this.leftAdj;
+    this.top = this.y + this.topAdj;
+    this.bottom = this.y + this.botAdj;
 };
 
 //-------------------------------------------------------------------
 // Enemy Class
 //-------------------------------------------------------------------
 
-var Enemy = function(x, y, right_adj, left_adj, top_adj, bot_adj) {
-    Actor.call(this, x, y, 'images/enemy-bug.png', right_adj, left_adj, top_adj, bot_adj);
+var Enemy = function(x, y, rightAdj, leftAdj, topAdj, botAdj) {
+    Actor.call(this, x, y, 'images/enemy-bug.png', rightAdj, leftAdj, topAdj, botAdj);
     // Determines a random speed for the enemy 
     this.speed = getRandomArbitrary(MIN_ENEMY_SPEED, MAX_ENEMY_SPEED);
     // Star reset
@@ -114,9 +114,9 @@ Enemy.prototype.update = function(dt) {
 //-------------------------------------------------------------------
 // Player Class
 //-------------------------------------------------------------------
-var Player = function(x, y, right_adj, left_adj, top_adj, bot_adj) {
+var Player = function(x, y, rightAdj, leftAdj, topAdj, botAdj) {
     this.charSelect = [BOY, CAT_GIRL, HORN_GIRL, PINK_GIRL, PRINCESS_GIRL];
-    Actor.call(this, x, y, this.charSelect[getRandomInt(0, 5)], right_adj, left_adj, top_adj, bot_adj);
+    Actor.call(this, x, y, this.charSelect[getRandomInt(0, 5)], rightAdj, leftAdj, topAdj, botAdj);
     this.alive = true;
     this.score = 0;
     this.highScore = 0;
@@ -167,15 +167,12 @@ Player.prototype.renderStatus = function() {
 };
 Player.prototype.checkCollisions = function(allEnemies, gem, heart, star) {
     
-    // The global version works
-    // I have no idea why only this doesn't work
-    // while the other parts work just fine
-    /*
+    var self = this;
     allEnemies.forEach(function(enemy) {
-        if(intersect(enemy, this)){
-           this.alive = false;
+        if(intersect(enemy, self)){
+           self.alive = false;
         }
-    });*/
+    });
     
     if(intersect(gem, this)) {
         gem.taken = true;
@@ -201,11 +198,11 @@ Player.prototype.checkCollisions = function(allEnemies, gem, heart, star) {
 // Gem Class - Player gains points by grabbing gems
 //-------------------------------------------------------------------
 
-var Gem = function(x, y, right_adj, left_adj, top_adj, bot_adj) {
+var Gem = function(x, y, rightAdj, leftAdj, topAdj, botAdj) {
     this.gemColor = [BLUE_GEM, GREEN_GEM, ORANGE_GEM];
     // Randomly will choose a gem with a value
     this.value = getRandomInt(0, 3) + 1;
-    Actor.call(this, x, y, this.gemColor[this.value - 1], right_adj, left_adj, top_adj, bot_adj);
+    Actor.call(this, x, y, this.gemColor[this.value - 1], rightAdj, leftAdj, topAdj, botAdj);
     this.taken = false;
 };
 Gem.prototype = Object.create(Actor.prototype);
@@ -227,8 +224,8 @@ Gem.prototype.update = function() {
 // Heart Class - Player gains lives by grabbing hearts
 //-------------------------------------------------------------------
 
-var Heart = function(x, y, right_adj, left_adj, top_adj, bot_adj) {
-    Actor.call(this, x, y, 'images/Heart.png', right_adj, left_adj, top_adj, bot_adj);
+var Heart = function(x, y, rightAdj, leftAdj, topAdj, botAdj) {
+    Actor.call(this, x, y, 'images/Heart.png', rightAdj, leftAdj, topAdj, botAdj);
     this.taken = false;
 };
 Heart.prototype = Object.create(Actor.prototype);
@@ -245,8 +242,8 @@ Heart.prototype.update = function() {
 //-------------------------------------------------------------------
 // Star Class - Player resets all the enemies by grabbing stars
 //-------------------------------------------------------------------
-var Star = function(x, y, right_adj, left_adj, top_adj, bot_adj) {
-    Actor.call(this, x, y, 'images/Star.png', right_adj, left_adj, top_adj, bot_adj);
+var Star = function(x, y, rightAdj, leftAdj, topAdj, botAdj) {
+    Actor.call(this, x, y, 'images/Star.png', rightAdj, leftAdj, topAdj, botAdj);
     this.taken = false;
 };
 Star.prototype = Object.create(Actor.prototype);

@@ -80,7 +80,6 @@ var Engine = (function(global) {
      */
     function update(dt) {
         player.checkCollisions(allEnemies, gem, heart, star);
-        checkCollisions();
         updateEntities(dt);
     }
 
@@ -107,17 +106,6 @@ var Engine = (function(global) {
         
     }
     
-    function checkCollisions() {
-        // Made a Player Prototype method to check collisions
-        // but for some reason the enemy collision isn't working
-        // for the Prototype version, so instead I am using a global version
-        allEnemies.forEach(function(enemy) {
-            if(intersect(enemy, player)){
-               player.alive = false;
-            }
-        });
-    }
-
     /* This function initially draws the "game level", it will then call
      * the renderEntities function. Remember, this function is called every
      * game tick (or loop of the game engine) because that's how games work -
