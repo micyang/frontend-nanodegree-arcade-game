@@ -14,7 +14,7 @@ var PLAYER_START_Y = GRID_Y * 5 - GRID_Y_BOTTOM_EMPTY_SPACE;
 var MIN_ENEMY_SPEED = 100;
 var MAX_ENEMY_SPEED = 700;
 // Enemy Spawn
-var ENEMY_SPAWN = 2;
+var ENEMY_SPAWN = 4;
 // Hitbox Adjustment
 var RIGHT_ADJUST = 83;
 var LEFT_ADJUST = 18;
@@ -46,6 +46,13 @@ function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
 }
 
+// Returns true if compared actors intersect
+function intersect(actor1, actor2) {
+        return !(actor1.right < actor2.left ||
+                actor1.left > actor2.right ||
+                actor1.top > actor2.bottom ||
+                actor1.bottom < actor2.top);
+}
 //-------------------------------------------------------------------
 // Actor Super Class
 //-------------------------------------------------------------------
@@ -62,16 +69,16 @@ var Actor = function(x, y, img, right_adj, left_adj, top_adj, bot_adj) {
     this.left = this.x + this.left_adj;
     this.top = this.y + this.top_adj;
     this.bottom = this.y + this.bot_adj;
-}
+};
 Actor.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-}
+};
 Actor.prototype.updateHitbox = function() {
     this.right = this.x + this.right_adj;
     this.left = this.x + this.left_adj;
     this.top = this.y + this.top_adj;
     this.bottom = this.y + this.bot_adj;
-}
+};
 
 //-------------------------------------------------------------------
 // Enemy Class
@@ -83,7 +90,7 @@ var Enemy = function(x, y, right_adj, left_adj, top_adj, bot_adj) {
     this.speed = getRandomArbitrary(MIN_ENEMY_SPEED, MAX_ENEMY_SPEED);
     // Star reset
     this.starReset = false;
-}
+};
 
 Enemy.prototype = Object.create(Actor.prototype);
 Enemy.prototype.constructor = Enemy;
@@ -96,25 +103,25 @@ Enemy.prototype.update = function(dt) {
     }
     
     // When player grabs the star, enemy resets
-    if(this.starReset == true) {
+    if(this.starReset === true) {
         this.x = GRID_X * -1;
         this.y = GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE;
         this.speed = getRandomArbitrary(MIN_ENEMY_SPEED, MAX_ENEMY_SPEED);
         this.starReset = false;
     }
     this.x = this.x + this.speed * dt;
-}
-/////////////////////////////////////////////////////////////////////
+};
+//-------------------------------------------------------------------
 // Player Class
-/////////////////////////////////////////////////////////////////////
+//-------------------------------------------------------------------
 var Player = function(x, y, right_adj, left_adj, top_adj, bot_adj) {
-    this.charSelect = [BOY, CAT_GIRL, HORN_GIRL, PINK_GIRL, PRINCESS_GIRL]
+    this.charSelect = [BOY, CAT_GIRL, HORN_GIRL, PINK_GIRL, PRINCESS_GIRL];
     Actor.call(this, x, y, this.charSelect[getRandomInt(0, 5)], right_adj, left_adj, top_adj, bot_adj);
     this.alive = true;
     this.score = 0;
     this.highScore = 0;
     this.lives = 3;
-}
+};
 Player.prototype = Object.create(Actor.prototype);
 Player.prototype.constructor = Player;
 Player.prototype.handleInput = function(keyCode) {
@@ -122,7 +129,7 @@ Player.prototype.handleInput = function(keyCode) {
     else if(keyCode == "down" &&  this.y < MAX_PLAYER_MOVE_DOWN) this.y = this.y + GRID_Y;
     else if(keyCode == "left" && this.x > MAX_PLAYER_MOVE_LEFT) this.x = this.x - GRID_X;
     else if(keyCode == "right" && this.x < MAX_PLAYER_MOVE_RIGHT) this.x = this.x + GRID_X;
-}
+};
 Player.prototype.update = function() {
     // Checks to see if player goes into water and gains a point
     if(this.y <= 0 * GRID_Y + GRID_Y_TOP_EMPTY_SPACE) {
@@ -133,22 +140,19 @@ Player.prototype.update = function() {
     }
     
     // Checks to see if player died and reset position
-    if(this.alive == false) {
+    if(this.alive === false) {
         this.x = PLAYER_START_X;
         this.y = PLAYER_START_Y;
         this.sprite = this.charSelect[getRandomInt(0, 5)];
         this.alive = true;
-        if(this.lives == 0){
+        if(this.lives === 0){
             this.score = 0;
             this.lives = 3;
         } else {
             this.lives = this.lives - 1;
         }
     }
-}
-Player.prototype.scoreUpdate = function(value) {
-    this.score = this.score + value;
-}
+};
 Player.prototype.renderStatus = function() {
     ctx.clearRect(0, 20 , 505 , 25);
     ctx.font = "20px serif";
@@ -160,7 +164,38 @@ Player.prototype.renderStatus = function() {
     if(this.score > this.highScore) this.highScore = this.score;
     ctx.fillText("High Score: " + this.highScore, 202, 40);
     
-}
+};
+Player.prototype.checkCollisions = function(allEnemies, gem, heart, star) {
+    
+    // The global version works
+    // I have no idea why only this doesn't work
+    // while the other parts work just fine
+    /*
+    allEnemies.forEach(function(enemy) {
+        if(intersect(enemy, this)){
+           this.alive = false;
+        }
+    });
+    */
+    if(intersect(gem, this)) {
+        gem.taken = true;
+        this.score = this.score + gem.value;
+    }
+    
+    if(intersect(heart, this)) {
+        heart.taken = true;
+        this.lives = this.lives + 1;
+    }
+    
+    if(intersect(star, this)) {
+        star.taken = true;
+        allEnemies.forEach(function(enemy) {
+            enemy.starReset = true;
+        });
+    }
+    
+    
+};
 
 //-------------------------------------------------------------------
 // Gem Class - Player gains points by grabbing gems
@@ -172,13 +207,13 @@ var Gem = function(x, y, right_adj, left_adj, top_adj, bot_adj) {
     this.value = getRandomInt(0, 3) + 1;
     Actor.call(this, x, y, this.gemColor[this.value - 1], right_adj, left_adj, top_adj, bot_adj);
     this.taken = false;
-}
+};
 Gem.prototype = Object.create(Actor.prototype);
 Gem.prototype.constructor = Gem;
 Gem.prototype.update = function() {
     // Random type of gem will randomly spawn at a location
     // after player grabs it
-    if(this.taken == true) {
+    if(this.taken === true) {
         this.value = getRandomInt(0, 3) + 1;
         this.sprite = this.gemColor[this.value - 1];
         // Reset gem in a random location
@@ -186,7 +221,7 @@ Gem.prototype.update = function() {
         this.y = GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE;
         this.taken = false;
     }
-}
+};
 
 //-------------------------------------------------------------------
 // Heart Class - Player gains lives by grabbing hearts
@@ -195,17 +230,17 @@ Gem.prototype.update = function() {
 var Heart = function(x, y, right_adj, left_adj, top_adj, bot_adj) {
     Actor.call(this, x, y, 'images/Heart.png', right_adj, left_adj, top_adj, bot_adj);
     this.taken = false;
-}
+};
 Heart.prototype = Object.create(Actor.prototype);
 Heart.prototype.constructor = Heart;
 Heart.prototype.update = function() {
     // Heart will reset after it's taken
-    if(this.taken == true) {
+    if(this.taken === true) {
         this.x = GRID_X * getRandomInt(0, 5);
         this.y = GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE;
         this.taken = false;
     }
-}
+};
 
 //-------------------------------------------------------------------
 // Star Class - Player resets all the enemies by grabbing stars
@@ -213,17 +248,17 @@ Heart.prototype.update = function() {
 var Star = function(x, y, right_adj, left_adj, top_adj, bot_adj) {
     Actor.call(this, x, y, 'images/Star.png', right_adj, left_adj, top_adj, bot_adj);
     this.taken = false;
-}
+};
 Star.prototype = Object.create(Actor.prototype);
 Star.prototype.constructor = Star;
 Star.prototype.update = function() {
     // Star will reset after it's taken
-    if(this.taken == true) {
+    if(this.taken === true) {
         this.x = GRID_X * getRandomInt(0, 5);
         this.y = GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE;
         this.taken = false;
     }
-}
+};
 
 //-------------------------------------------------------------------
 // Instantiate Objects
@@ -233,7 +268,7 @@ Star.prototype.update = function() {
 var player = new Player(PLAYER_START_X, PLAYER_START_Y, RIGHT_ADJUST, LEFT_ADJUST, TOP_ADJUST, BOTTOM_ADJUST);
 
 // Instantiate Enemy Object in an array
-var allEnemies = new Array();
+var allEnemies = [];
 for (var i = 0; i < ENEMY_SPAWN; i++)
     allEnemies.push(new Enemy(GRID_X * -1, GRID_Y * getRandomInt(1, 4) - GRID_Y_BOTTOM_EMPTY_SPACE, ENEMY_RIGHT_ADJUST, ENEMY_LEFT_ADJUST, ENEMY_TOP_ADJUST, ENEMY_BOTTOM_ADJUST));
     

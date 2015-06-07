@@ -79,6 +79,7 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
+        player.checkCollisions(allEnemies, gem, heart, star);
         checkCollisions();
         updateEntities(dt);
     }
@@ -107,35 +108,14 @@ var Engine = (function(global) {
     }
     
     function checkCollisions() {
+        // Made a Player Prototype method to check collisions
+        // but for some reason the enemy collision isn't working
+        // for the Prototype version, so instead I am using a global version
         allEnemies.forEach(function(enemy) {
             if(intersect(enemy, player)){
                player.alive = false;
             }
         });
-        
-        if(intersect(gem, player)) {
-            gem.taken = true;
-            player.scoreUpdate(gem.value);
-        }
-        
-        if(intersect(heart, player)) {
-            heart.taken = true;
-            player.lives = player.lives + 1;
-        }
-        
-        if(intersect(star, player)) {
-            star.taken = true;
-            allEnemies.forEach(function(enemy) {
-                enemy.starReset = true;
-            });
-        }
-    }
-    // Returns true if compared actors intersect
-    function intersect(actor1, actor2) {
-        return !(actor1.right < actor2.left ||
-                actor1.left > actor2.right ||
-                actor1.top > actor2.bottom ||
-                actor1.bottom < actor2.top);
     }
 
     /* This function initially draws the "game level", it will then call
